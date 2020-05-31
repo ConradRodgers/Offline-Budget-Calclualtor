@@ -9,7 +9,7 @@ const FILES_TO_CACHE = [
 // ID cache
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1";
-
+//INstall steps
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {

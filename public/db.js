@@ -1,3 +1,4 @@
+import checkDatabase from "./checkDB"
 const indexedDB =
   window.indexedDB ||
   window.mozIndexedDB ||
@@ -5,7 +6,7 @@ const indexedDB =
   window.msIndexedDB ||
   window.shimIndexedDB;
 
-let db;
+const db;
 const request = indexedDB.open("budget", 1);
 
 request.onupgradeneeded = ({ target }) => {
@@ -16,8 +17,9 @@ request.onupgradeneeded = ({ target }) => {
 request.onsuccess = ({ target }) => {
   db = target.result;
 
-  // checks if DB is online befor updating
+
   if (navigator.onLine) {
+    // checking for network status
     checkDatabase();
   }
 };
@@ -29,35 +31,10 @@ request.onerror = function (event) {
 function saveRecord(record) {
   const transaction = db.transaction(["pending"], "readwrite");
   const store = transaction.objectStore("pending");
-
+//add updates to DB 
   store.add(record);
 }
 
-function checkDatabase() {
-  const transaction = db.transaction(["pending"], "readwrite");
-  const store = transaction.objectStore("pending");
-  const getAll = store.getAll();
 
-  getAll.onsuccess = function () {
-    if (getAll.result.length > 0) {
-      fetch("/api/transaction/bulk", {
-        method: "POST",
-        body: JSON.stringify(getAll.result),
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => {
-          return response.json();
-        })
-        .then(() => {
-          const transaction = db.transaction(["pending"], "readwrite");
-          const store = transaction.objectStore("pending");
-          store.clear();
-        });
-    }
-  };
-}
-
+// listen for app coming back online
 window.addEventListener("online", checkDatabase);
